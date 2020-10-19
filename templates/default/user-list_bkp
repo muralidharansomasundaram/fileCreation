@@ -1,0 +1,11 @@
+<html>
+<head>
+ <title>My User List</title>
+</head>
+<body>
+<h1>User List</h1>
+User 1: <%= node['fileCreation']['user-1'] %>
+User Age: <%= node['fileCreation']['user-1']['age'] %>
+User Height: <%= node['fileCreation']['user-1']['height'] %>
+</body> 
+</html>
