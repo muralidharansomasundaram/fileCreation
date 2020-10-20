@@ -1,0 +1,42 @@
+---
+ - hosts: all
+   become: true
+   vars:
+      CHEF_CMD_TO_INVOKE_COOKBOOK: " chef-solo -c /{{ CHEF_DIR }}/solo.rb -j /{{ CHEF_DIR }}/startup.json -E {{ CHEF_ENV_DETAIL }} "
+      CHEF_DIR: chef-cookbook-install
+   vars_prompt:
+     - name: CHEF_ENV_DETAIL
+       prompt: Kinldy enter the ENV detail
+       private: no
+     - name: ENV_FILES_VALUE
+       prompt: Kindly enter env.rb file value to be replaced in chef cookbook
+       private: no
+   tasks:
+     - name: Create Chef-dev directory
+       file:
+         path: /{{ CHEF_DIR }}/{{ item }}
+         state: directory
+       with_items:
+        - cookbooks
+        - environments
+     - name: creating cookbook folder
+       file:
+        path: /{{ CHEF_DIR }}/cookbooks/fileCreation
+        state: directory
+     - name: Downloading cookbook packge from GIT Repo
+       git:
+         repo: 'https://github.com/muralidharansomasundaram/fileCreation.git'
+         dest: /{{ CHEF_DIR }}/cookbooks/fileCreation
+     - name: copying solo.rb and startup.json
+       template:
+         src: "{{ item.src }}" 
+         dest: "/{{ CHEF_DIR }}/{{ item.dest }}"
+       with_items:
+        - { src: solo_template.rb.j2, dest: solo.rb }
+        - { src: startup.json.j2, dest: startup.json }
+     - name:  copy env_template to chef env folder
+       template:
+         src: env_template.rb.j2 
+         dest: /{{ CHEF_DIR }}/environments/{{ CHEF_ENV_DETAIL }}.rb
+     - name: Invoke Chef-client on remote node
+       shell: "{{ CHEF_CMD_TO_INVOKE_COOKBOOK }}"
